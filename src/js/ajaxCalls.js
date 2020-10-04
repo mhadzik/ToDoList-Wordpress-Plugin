@@ -1,3 +1,6 @@
+// Glowna funkcja ktora robi calla do bazy danych :)
+// Link: https://stackoverflow.com/questions/17855846/using-ajax-in-a-wordpress-plugin
+
 jQuery(document).ready(function ($) {
     // Some event will trigger the ajax call, you can push whatever data to the server, 
     // simply passing it to the "data" object in ajax call

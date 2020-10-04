@@ -83,6 +83,8 @@ function run_todolist() {
 
 run_todolist();
 
+
+// FUNKCJE PHPOWE OBSLUGUJACE CALLA w ajacCalls.js
 add_action( 'wp_enqueue_scripts', 'so_enqueue_scripts' );
 function so_enqueue_scripts(){
   wp_register_script( 

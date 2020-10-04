@@ -1,5 +1,7 @@
 <?php
 
+// To jest ten plik ktory stworzylem, ale nei do konca wiem czy jest koneiczny... :/ 
+
 
 // add_action( 'wp_enqueue_scripts', 'wp734_register_scripts' );
 // function wp734_register_scripts() {
