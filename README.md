@@ -1,6 +1,6 @@
 ## To Do List plugin for Wordpress Admin panel
 
-### Steps to do to install plugin:
+#### Steps to do to install plugin:
 1. Copy the folder of the plugin to your wordpress/wp_content/plugins directory
 2. Open your Wordpress Plugins page and install To Do List plugin
 
@@ -10,7 +10,7 @@ Basically once you have installed the plugin it should be self explanatory.
 On the Wordpress menu of your admin panel you should see a new icon with plugin name. 
 Go to that page and you will be able to use the plugin.
 
-### Functions of the plugin:
+#### Functions of the plugin:
 1. Create a new task by entering it's name and click Enter
 2. Edit your tasks' names and statuses
 3. Delete completed tasks
