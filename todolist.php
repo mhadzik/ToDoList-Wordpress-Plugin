@@ -1,56 +1,24 @@
 <?php
 
-
 /**
- * The plugin bootstrap file
- *
- * This file is read by WordPress to generate the plugin information in the plugin
- * admin area. This file also includes all of the dependencies used by the plugin,
- * registers the activation and deactivation functions, and defines a function
- * that starts the plugin.
- *
- * @link              mhadzik
- * @since             1.0.0
- * @package           Todolist
- *
  * @wordpress-plugin
  * Plugin Name:       To Do List 
- * Plugin URI:        todolist
- * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
- * Version:           1.0.0
  * Author:            mhadzik
- * Author URI:        mhadzik
- * License:           GPL-2.0+
- * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       todolist
- * Domain Path:       /languages
  */
 
-// If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-/**
- * Currently plugin version.
- * Start at version 1.0.0 and use SemVer - https://semver.org
- * Rename this for your plugin and update it as you release new versions.
- */
 define( 'TODOLIST_VERSION', '1.0.0' );
 
-/**
- * The code that runs during plugin activation.
- * This action is documented in includes/class-todolist-activator.php
- */
+
 function activate_todolist() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-todolist-activator.php';
 	Todolist_Activator::activate();
 }
 
-/**
- * The code that runs during plugin deactivation.
- * This action is documented in includes/class-todolist-deactivator.php
- */
+
 function deactivate_todolist() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-todolist-deactivator.php';
 	Todolist_Deactivator::deactivate();
@@ -59,45 +27,88 @@ function deactivate_todolist() {
 register_activation_hook( __FILE__, 'activate_todolist' );
 register_deactivation_hook( __FILE__, 'deactivate_todolist' );
 
-/**
- * The core plugin class that is used to define internationalization,
- * admin-specific hooks, and public-facing site hooks.
- */
 require plugin_dir_path( __FILE__ ) . 'includes/class-todolist.php';
 
-/**
- * Begins execution of the plugin.
- *
- * Since everything within the plugin is registered via hooks,
- * then kicking off the plugin from this point in the file does
- * not affect the page life cycle.
- *
- * @since    1.0.0
- */
 function run_todolist() {
 
 	$plugin = new Todolist();
 	$plugin->run();
+	add_action( 'wp_ajax_tasksList', 'tasksListCallback' );
+	add_action( 'wp_ajax_tasksAdd', 'tasksAddCallback' );
+	add_action( 'wp_ajax_tasksDelete', 'tasksDeleteCallback' );
+	add_action( 'wp_ajax_tasksUpdate', 'tasksUpdateCallback' );
+
+
+	add_action("admin_menu", "pluginajax_menu");
+
 
 }
 
 run_todolist();
 
+function pluginajax_menu() {
+	add_menu_page("Plugin: To Do List", "Plugin: To Do List","manage_options", "todolist", "todoListDisplay");
+ }
+ 
+ function todoListDisplay(){
+	include "includes/admin/partials/todolist-admin-display.php";
+ }
 
-// FUNKCJE PHPOWE OBSLUGUJACE CALLA w ajacCalls.js
-add_action( 'wp_enqueue_scripts', 'so_enqueue_scripts' );
-function so_enqueue_scripts(){
-  wp_register_script( 
-    'ajaxHandle', 
-    plugins_url('./src/js/ajaxCalls.js', __FILE__), 
-    array(), 
-    false, 
-    true 
-  );
-  wp_enqueue_script( 'ajaxHandle' );
-  wp_localize_script( 
-    'ajaxHandle', 
-    'ajax_object', 
-    array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) 
-  );
-}
+function tasksListCallback() {
+	global $wpdb;
+	$response = array();
+ 
+	$response = $wpdb->get_results($wpdb->prepare("SELECT * FROM wp_tasks"));
+	 
+	echo json_encode($response);
+	die(); 
+
+ }
+
+ function tasksAddCallback() {
+	global $wpdb;
+	$wpdb->insert( 'wp_tasks',array( 'task' => $_POST['task'], 'taskStatus' => $_POST['taskStatus']) );
+    $status = $wpdb->insert_id;
+
+	$response = array();
+ 
+	$response = $wpdb->get_results($wpdb->prepare("SELECT * FROM wp_tasks"));
+	 
+
+    echo $status ? json_encode($response) : json_encode(var_dump($wpdb));
+	 
+	die(); 
+
+ }
+
+ function tasksDeleteCallback() {
+	global $wpdb;
+            $ids = isset($_REQUEST['id']) ? $_REQUEST['id'] : array();
+            if (is_array($ids)) $ids = implode(',', $ids);
+
+            if (!empty($ids)) {
+               $wpdb->query("DELETE FROM wp_tasks WHERE id IN($ids)");
+            }
+        
+			$response = array();
+ 
+			$response = $wpdb->get_results($wpdb->prepare("SELECT * FROM wp_tasks"));
+
+	echo json_encode($response);
+
+	die(); 
+	
+ }
+
+ function tasksUpdateCallback() {
+	global $wpdb;
+	if($_POST['task']){
+		$wpdb->update( 'wp_tasks',array( 'task' => $_POST['task']), array('id'=>$_POST['id']) );
+		echo json_encode('task updated');
+	} else {
+		$wpdb->update( 'wp_tasks',array( 'taskStatus' => $_POST['taskStatus']), array('id'=>$_POST['id']) );
+		echo json_encode('task status updated');
+	} 
+	die(); 
+
+ }
